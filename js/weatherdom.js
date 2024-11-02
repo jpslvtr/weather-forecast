@@ -162,5 +162,3 @@ if(localStorage.getItem('city')) {
     .then(data => updateUI(data))
     .catch(err => console.log(err))
 }
-
-// https://maps.googleapis.com/maps/api/geocode/json?latlng=40.714224,-73.961452&key=AIzaSyDKTZVwlg1SO-JlyAH3LZd0F4qYsbjdh3g
