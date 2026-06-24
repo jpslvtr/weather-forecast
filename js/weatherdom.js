@@ -1,164 +1,155 @@
 const input = document.querySelector('.input-location');
-// const currentLocation = document.getElementById('.getLocation');
 const updateDetails = document.querySelector('.updateDetails');
 const forecast = new Forecast();
+
 const updateUI = (data) => {
-    // destructure properties
-    // const { cityData, current, twelve, minuteCast } = data;
-    const { cityData, current, twelve } = data;
-    // console.log(JSON.stringify(twelve[0],null,2));
-    // console.log(JSON.stringify(current,null,2));
-    // console.log(data)
+  const { location, weather } = data;
+  const current = weather.current;
+  const hourly = weather.hourly;
+  const daily = weather.daily;
 
+  const locationName = location.admin1
+    ? `${location.name}, ${location.admin1}`
+    : location.name;
+  const currentDate = formatDate(current.time);
+  const sunrise = formatTime(daily.sunrise[0]);
+  const sunset = formatTime(daily.sunset[0]);
 
-    // 12 hour data
-    var myHash = new Object();
-    for(var i=0; i<twelve.length; i++) {
-      var myTime = getSimpleTime(twelve[i]);
-      var myTemp = getTemp(twelve[i]);
-      var myWeather = getWeather(twelve[i]);
-      var windSpeed = getWindSpeed(twelve[i]);
-      var windDirection = getWindDirection(twelve[i]);
-      myHash[i] = [myTime, myTemp, myWeather, windSpeed, windDirection];
-    }
+  let rows = `<tr>
+      <td>${formatTime(current.time)}</td>
+      <td>${formatTemp(current.temperature_2m)}</td>
+      <td>${describeWeather(current.weather_code)}</td>
+      <td>${degToCompass(current.wind_direction_10m)} ${formatWind(current.wind_speed_10m)}</td>
+    </tr>`;
 
-    // current data
-    var currentDate = getCurrentTime(current)[0];
-    var currentTime = getCurrentTime(current)[1];
-    var currentTemp = current.Temperature.Imperial.Value + " &deg;F";
-    var currentWeather = getCurrentWeather(current);
-    var currentWindSpeed = current.Wind.Speed.Imperial.Value + " mph";
-    var currentWindDirection = current.Wind.Direction.English;
-    // get sunrise and sunset
-    var latitude = (cityData.GeoPosition['Latitude']);
-    var longitude = (cityData.GeoPosition['Longitude']);
-    var fs1 = "https://api.sunrise-sunset.org/json?lat=";
-    var fs2 = fs1 + latitude + "&lng=" + longitude + "&formatted=0";
-    var sundata;
-    fetch(fs2)
-      .then(res => res.json())
-      .then(sundata => {
-        sunrise = new Date(sundata.results.sunrise);
-        sunrise = formatTime(sunrise);
-        sunset = new Date(sundata.results.sunset);
-        sunset = formatTime(sunset)
-
-        // print tables
-        var html1 = `<br>
-        Location: ${cityData.EnglishName},&nbsp;${cityData.AdministrativeArea.EnglishName}<br>
-        Date: ${currentDate}<br>
-        Sunrise: ${sunrise}<br>
-        Sunset: ${sunset}<br><br>
-        <table class="table table-striped table-bordered table-condensed">
-          <tr>
-            <td>Time</td>
-            <td>Temp</td>
-            <td>Weather</td>
-            <td>Wind</td>
-          </tr>
-          <tr>
-            <td>${currentTime}</td>
-            <td>${currentTemp}</td>
-            <td>${currentWeather}</td>
-            <td>${currentWindDirection} ${currentWindSpeed}</td>
-          </tr>`
-        var html2 = ''
-        for(var i in myHash) {
-          html2 += `<tr>
-                    <td>${myHash[i][0]}</td>
-                    <td>${myHash[i][1]}</td>
-                    <td>${myHash[i][2]}</td>
-                    <td>${myHash[i][4]} ${myHash[i][3]}</td>
-                  </tr>`
-        }
-        var html3 = `</table>`
-        updateDetails.innerHTML = html1 + html2 + html3
-
-        function formatTime(date) {
-          var minutes = ("0" + date.getMinutes()).slice(-2);
-          var hours = date.getHours();
-          var suffix = (hours >= 12) ? 'PM' : 'AM';
-          hours = (hours > 12) ? hours - 12 : hours; // only -12 from hours if it is greater than 12 (if not, back at mid night)
-          hours = (hours == '00') ? 12 : hours; // if 00 then it is 12 am
-          var myTime = hours + ":" + minutes + " " + suffix
-          return myTime.toString()
-        }
-      })
-}
-
-function getCurrentTime(date) {
-  var date = new Date(date.EpochTime*1000);
-  var year = date.getFullYear();
-  var month = date.getMonth()+1;
-  var day = date.getDate();
-  var hours = date.getHours();
-  var suffix = (hours >= 12) ? 'PM' : 'AM';
-  hours = (hours > 12) ? hours - 12 : hours; // only -12 from hours if it is greater than 12 (if not, back at mid night)
-  hours = (hours == '00') ? 12 : hours; // if 00 then it is 12 am
-  var minutes = ("0" + date.getMinutes()).slice(-2);
-
-  var first = month + "/" + day + "/" + year;
-  var second = hours + ":" + minutes + " " + suffix;
-  return [first, second];
-}
-
-
-function getSimpleTime(date) {
-  var date = new Date(date.EpochDateTime*1000);
-  var hours = date.getHours();
-  var suffix = (hours >= 12) ? 'PM' : 'AM';
-  hours = (hours > 12) ? hours - 12 : hours; // only -12 from hours if it is greater than 12 (if not, back at mid night)
-  hours = (hours == '00') ? 12 : hours; // if 00 then it is 12 am
-  return hours + " " + suffix;
-}
-
-function getTemp(temp) {
-  return temp.Temperature.Value + " &deg;F";
-}
-
-function getCurrentWeather(weather) {
-  var precip = weather.WeatherText;
-  if (weather.HasPrecipitation == true) {
-    precip += "<br>Accumulation: " + weather.PrecipitationSummary.PastHour.Imperial.Value + " in (past hour)"
+  for (let i = 0; i < hourly.time.length; i++) {
+    const chance = hourly.precipitation_probability[i];
+    const weatherText = chance > 0
+      ? `${describeWeather(hourly.weather_code[i])}, ${chance}%`
+      : describeWeather(hourly.weather_code[i]);
+    rows += `<tr>
+        <td>${formatHour(hourly.time[i])}</td>
+        <td>${formatTemp(hourly.temperature_2m[i])}</td>
+        <td>${weatherText}</td>
+        <td>${degToCompass(hourly.wind_direction_10m[i])} ${formatWind(hourly.wind_speed_10m[i])}</td>
+      </tr>`;
   }
-  return precip
+
+  updateDetails.innerHTML = `<br>
+    Location: ${locationName}<br>
+    Date: ${currentDate}<br>
+    Sunrise: ${sunrise}<br>
+    Sunset: ${sunset}<br><br>
+    <table class="table table-striped table-bordered table-condensed">
+      <tr>
+        <td>Time</td>
+        <td>Temp</td>
+        <td>Weather</td>
+        <td>Wind</td>
+      </tr>
+      ${rows}
+    </table>`;
+};
+
+function formatTemp(value) {
+  return Math.round(value) + " &deg;F";
 }
 
-
-function getWeather(weather) {
-  var precip;
-  if (weather.HasPrecipitation == true) {
-    precip = weather.PrecipitationIntensity + " " + weather.PrecipitationType + ", " + weather.PrecipitationProbability + "%<br>";
-    precip += "Accumulation: " + weather.TotalLiquid.Value + " in";
-  } else {
-    precip = weather.IconPhrase;
-  }
-  return precip
+function formatWind(value) {
+  return Math.round(value) + " mph";
 }
 
-function getWindSpeed(weather) {
-  return weather.Wind.Speed.Value + " mph";
+// Open-Meteo returns location-local times as ISO strings without an offset
+// (for example "2026-06-24T16:15"). Parse the parts directly so the browser's
+// timezone never shifts the displayed value.
+function parseLocal(isoStr) {
+  const [datePart, timePart] = isoStr.split('T');
+  const [year, month, day] = datePart.split('-').map(Number);
+  const [hour, minute] = timePart.split(':').map(Number);
+  return { year, month, day, hour, minute };
 }
 
-function getWindDirection(weather) {
-  return weather.Wind.Direction.English;
+function to12Hour(hour) {
+  const suffix = hour >= 12 ? 'PM' : 'AM';
+  let h = hour % 12;
+  if (h === 0) h = 12;
+  return { h, suffix };
 }
 
-var oops = '<br><p>Sorry, I only have the free version of AccuWeather\'s API. <br> Perhaps one day I\'ll upgrade.</p>'
+function formatDate(isoStr) {
+  const { year, month, day } = parseLocal(isoStr);
+  return `${month}/${day}/${year}`;
+}
 
-input.addEventListener('submit',(e) => {
-    e.preventDefault()
-    const city = input.city.value.trim()
-    localStorage.setItem('city', city)
-    input.reset()
-    input.city.blur()
-    forecast.updateCity(city).then(data => updateUI(data))
-      .catch(err => console.log(err))
-      .catch(err => updateDetails.innerHTML=oops)
-})
+function formatTime(isoStr) {
+  const { hour, minute } = parseLocal(isoStr);
+  const { h, suffix } = to12Hour(hour);
+  const mm = ("0" + minute).slice(-2);
+  return `${h}:${mm} ${suffix}`;
+}
 
-if(localStorage.getItem('city')) {
+function formatHour(isoStr) {
+  const { hour } = parseLocal(isoStr);
+  const { h, suffix } = to12Hour(hour);
+  return `${h} ${suffix}`;
+}
+
+function degToCompass(deg) {
+  const dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+    'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  return dirs[Math.round(deg / 22.5) % 16];
+}
+
+// WMO weather interpretation codes used by Open-Meteo.
+function describeWeather(code) {
+  const codes = {
+    0: 'Clear sky',
+    1: 'Mainly clear',
+    2: 'Partly cloudy',
+    3: 'Overcast',
+    45: 'Fog',
+    48: 'Rime fog',
+    51: 'Light drizzle',
+    53: 'Drizzle',
+    55: 'Dense drizzle',
+    56: 'Light freezing drizzle',
+    57: 'Freezing drizzle',
+    61: 'Light rain',
+    63: 'Rain',
+    65: 'Heavy rain',
+    66: 'Light freezing rain',
+    67: 'Freezing rain',
+    71: 'Light snow',
+    73: 'Snow',
+    75: 'Heavy snow',
+    77: 'Snow grains',
+    80: 'Light showers',
+    81: 'Showers',
+    82: 'Violent showers',
+    85: 'Light snow showers',
+    86: 'Snow showers',
+    95: 'Thunderstorm',
+    96: 'Thunderstorm with hail',
+    99: 'Thunderstorm with heavy hail'
+  };
+  return codes[code] || 'Unknown';
+}
+
+const oops = '<br><p>Sorry, I could not find that location. Please try another city or zip code.</p>';
+
+input.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const city = input.city.value.trim();
+  localStorage.setItem('city', city);
+  input.reset();
+  input.city.blur();
+  forecast.updateCity(city)
+    .then(data => updateUI(data))
+    .catch(() => updateDetails.innerHTML = oops);
+});
+
+if (localStorage.getItem('city')) {
   forecast.updateCity(localStorage.getItem('city'))
     .then(data => updateUI(data))
-    .catch(err => console.log(err))
+    .catch(() => updateDetails.innerHTML = oops);
 }

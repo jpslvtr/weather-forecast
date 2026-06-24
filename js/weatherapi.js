@@ -1,48 +1,37 @@
 class Forecast {
   constructor() {
-    this.apiKey = '***REMOVED***' // core weather free
-    // this.apiKey = '***REMOVED***' // core weather paid
-    // this.apiKeyWeather = '***REMOVED***' // minutecast
-    // this.windyAPI = '***REMOVED***'
-    this.corsProxy = 'https://corsproxy.io/?'
-    this.cityURI = 'https://dataservice.accuweather.com/locations/v1/cities/search'
-    this.currentURI = 'https://dataservice.accuweather.com/currentconditions/v1/'
-    this.twelveURI = 'https://dataservice.accuweather.com/forecasts/v1/hourly/12hour/'
-    // this.windyURI = 'https://api.windy.com/api/point-forecast/v2'
-    // this.minuteCastURI = 'https://dataservice.accuweather.com/forecasts/v1/minute'
+    // Open-Meteo: free, no API key required, CORS enabled in the browser.
+    this.geocodeURI = 'https://geocoding-api.open-meteo.com/v1/search'
+    this.forecastURI = 'https://api.open-meteo.com/v1/forecast'
   }
   async updateCity(city) {
-    const cityData = await this.getCity(city)
-    const current = await this.getCurrent(cityData.Key)
-    const twelve = await this.getTwelve(cityData.Key)
-    // const minuteCast = await this.getMinuteCast(cityData.GeoPosition)
-    // return { cityData, current, twelve, minuteCast }
-    return { cityData, current, twelve }
+    const location = await this.getLocation(city)
+    const weather = await this.getWeather(location.latitude, location.longitude)
+    return { location, weather }
   }
-  async getCity(city) {
-    const query = `?apikey=${this.apiKey}&q=${city}`
-    const response = await fetch(this.corsProxy + this.cityURI + query)
+  async getLocation(city) {
+    const query = `?name=${encodeURIComponent(city)}&count=1&language=en&format=json`
+    const response = await fetch(this.geocodeURI + query)
     const data = await response.json()
-    return data[0]
+    if (!data.results || data.results.length === 0) {
+      throw new Error('Location not found')
+    }
+    return data.results[0]
   }
-  async getCurrent(key) {
-    const query = `${key}?details=true&apikey=${this.apiKey}`
-    const response = await fetch(this.corsProxy + this.currentURI + query)
-    const data = await response.json()
-    return data[0]
+  async getWeather(latitude, longitude) {
+    const params = [
+      `latitude=${latitude}`,
+      `longitude=${longitude}`,
+      'current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation',
+      'hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation_probability',
+      'daily=sunrise,sunset',
+      'temperature_unit=fahrenheit',
+      'wind_speed_unit=mph',
+      'precipitation_unit=inch',
+      'timezone=auto',
+      'forecast_hours=12'
+    ].join('&')
+    const response = await fetch(`${this.forecastURI}?${params}`)
+    return await response.json()
   }
-  async getTwelve(key) {
-    const query = `${key}?details=true&apikey=${this.apiKey}`
-    const response = await fetch(this.corsProxy + this.twelveURI + query)
-    const data = await response.json()
-    return data
-  }
-  // async getMinuteCast(geo) {
-  // var lat = (geo['Latitude']).toFixed(1)
-  // var long = (geo['Longitude']).toFixed(1)
-  // const query = `?q=${lat},${long}&apikey=${this.apiKeyWeather}`
-  // const response = await fetch(this.corsProxy + this.minuteCastURI + query)
-  // const data = await response.json()
-  // return data
-  // }
 }

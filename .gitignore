@@ -1,1 +1,6 @@
+# macOS
+.DS_Store
+
+# Editor and tooling
+CLAUDE.md
 repomix-output.xml
