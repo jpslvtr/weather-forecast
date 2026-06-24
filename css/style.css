@@ -315,9 +315,11 @@ input::-webkit-calendar-picker-indicator {
   margin: 0 0 6px;
 }
 
-/* Keep forecast tables readable and on-screen on phones and small tablets */
+/* Keep forecast text consistent and on-screen on phones and small tablets */
 @media screen and (max-width: 768px) {
-  .updateDetails table {
+  .updateDetails table,
+  .updateDetails .wx-day,
+  .updateDetails .wx-day .smallerfont {
     font-size: 12px;
   }
   .updateDetails td {
