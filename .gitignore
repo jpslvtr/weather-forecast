@@ -4,3 +4,10 @@
 # Editor and tooling
 CLAUDE.md
 repomix-output.xml
+
+# Claude, scratch (wm), and repo-packing artifacts
+CLAUDE.local.md
+.claude/
+wm*
+repomix*
+repopack*
