@@ -259,3 +259,62 @@ input::-webkit-calendar-picker-indicator {
 .italic {
   font-style: italic;
 }
+
+/* Forecast tabs */
+.wx-current {
+  margin: 6px 0 12px;
+  line-height: 1.5;
+}
+
+.wx-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.wx-tab {
+  flex: 1 1 auto;
+  min-width: 80px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #000;
+  background: #f2f2f2;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.wx-tab:hover {
+  background: #e6e6e6;
+}
+
+.wx-tab.active {
+  color: #fff;
+  background: #333;
+  border-color: #333;
+}
+
+.wx-panel {
+  display: none;
+}
+
+.wx-panel.active {
+  display: block;
+}
+
+/* Daily summary cards */
+.wx-day {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.wx-day h5 {
+  margin: 0 0 6px;
+}
+
+.wx-day p {
+  margin: 0 0 6px;
+}

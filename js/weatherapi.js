@@ -22,14 +22,15 @@ class Forecast {
     const params = [
       `latitude=${latitude}`,
       `longitude=${longitude}`,
-      'current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation',
+      'current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation',
       'hourly=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m,precipitation_probability',
-      'daily=sunrise,sunset',
+      'daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,wind_direction_10m_dominant',
       'temperature_unit=fahrenheit',
       'wind_speed_unit=mph',
       'precipitation_unit=inch',
       'timezone=auto',
-      'forecast_hours=12'
+      'forecast_hours=24',
+      'forecast_days=7'
     ].join('&')
     const response = await fetch(`${this.forecastURI}?${params}`)
     return await response.json()
