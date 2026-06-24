@@ -269,30 +269,26 @@ input::-webkit-calendar-picker-indicator {
 .wx-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #eee;
 }
 
 .wx-tab {
-  flex: 1 1 auto;
-  min-width: 80px;
-  padding: 8px 12px;
+  padding: 6px 14px 6px 0;
   font-size: 14px;
-  color: #000;
-  background: #f2f2f2;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  color: #999;
+  background: none;
+  border: none;
   cursor: pointer;
 }
 
 .wx-tab:hover {
-  background: #e6e6e6;
+  color: #000;
 }
 
 .wx-tab.active {
-  color: #fff;
-  background: #333;
-  border-color: #333;
+  color: #000;
+  font-weight: bold;
 }
 
 .wx-panel {
@@ -317,4 +313,17 @@ input::-webkit-calendar-picker-indicator {
 
 .wx-day p {
   margin: 0 0 6px;
+}
+
+/* Keep forecast tables readable and on-screen on phones and small tablets */
+@media screen and (max-width: 768px) {
+  .updateDetails table {
+    font-size: 12px;
+  }
+  .updateDetails td {
+    padding: 4px 6px;
+  }
+  .wx-day {
+    padding: 8px 10px;
+  }
 }

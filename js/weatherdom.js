@@ -5,8 +5,7 @@ const forecast = new Forecast();
 const TABS = [
   { id: 'h12', label: '12 Hours' },
   { id: 'h24', label: '24 Hours' },
-  { id: 'd3', label: '3 Days' },
-  { id: 'd7', label: 'This Week' }
+  { id: 'd7', label: 'Next 7 Days' }
 ];
 
 let activeTab = localStorage.getItem('tab') || 'h12';
@@ -33,7 +32,6 @@ const updateUI = (data) => {
   const panels = {
     h12: hourlyTable(weather, 12),
     h24: hourlyTable(weather, 24),
-    d3: dailyCards(weather, 3),
     d7: dailyCards(weather, 7)
   };
 
@@ -92,7 +90,7 @@ function hourlyTable(weather, count) {
       </tr>`;
   }
 
-  return `<table class="table table-striped table-bordered table-condensed">
+  return `<div class="table-responsive"><table class="table table-striped table-bordered table-condensed">
       <tr>
         <td>Time</td>
         <td>Temp</td>
@@ -100,7 +98,7 @@ function hourlyTable(weather, count) {
         <td>Wind</td>
       </tr>
       ${rows}
-    </table>`;
+    </table></div>`;
 }
 
 function dailyCards(weather, count) {
